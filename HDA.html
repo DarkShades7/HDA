@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HDA — Horizon of Development Association</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#06070a;
+    --panel:#0b0e13;
+    --panel-2:#10141b;
+    --line: rgba(255,255,255,0.08);
+    --line-strong: rgba(255,255,255,0.14);
+    --text:#e9edf3;
+    --text-dim:#8791a0;
+    --text-faint:#525a66;
+    --accent-research:#4dd8c4;
+    --accent-medicine:#e8556a;
+    --accent-aerospace:#8ba0ff;
+    --accent-home:#c9d3e0;
+    --accent: var(--accent-home);
+    --accent-soft: rgba(201,211,224,0.12);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; text-align:inherit; -webkit-appearance:none; appearance:none; }
+  .div-card{ width:100%; }
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--void);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent); color:var(--void); }
+
+  /* ---------- background canvas ---------- */
+  #bg{
+    position:fixed; inset:0; width:100%; height:100%;
+    z-index:0; pointer-events:none;
+  }
+  .grain{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    opacity:0.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background: radial-gradient(ellipse at 50% 30%, transparent 0%, transparent 45%, rgba(6,7,10,0.55) 100%);
+  }
+
+  /* ---------- layout shell ---------- */
+  .shell{ position:relative; z-index:2; min-height:100vh; }
+
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px clamp(20px,5vw,56px);
+    backdrop-filter: blur(10px);
+    background:linear-gradient(to bottom, rgba(6,7,10,0.85), rgba(6,7,10,0));
+    transition:background 0.4s ease;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600; font-size:15px; letter-spacing:0.06em;
+    color:var(--text); text-decoration:none; cursor:pointer;
+  }
+  .brand .mark{
+    width:26px; height:26px; position:relative; flex-shrink:0;
+  }
+  .brand .mark svg{ width:100%; height:100%; display:block; }
+  .brand small{
+    display:block; font-family:'JetBrains Mono', monospace;
+    font-weight:400; font-size:9.5px; letter-spacing:0.08em;
+    color:var(--text-faint); margin-top:1px; text-transform:uppercase;
+  }
+  nav{ display:flex; align-items:center; gap:clamp(14px,2.4vw,34px); }
+  nav .nav-link{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text-dim); text-decoration:none;
+    position:relative; padding-bottom:4px;
+    transition:color 0.25s ease;
+    white-space:nowrap;
+  }
+  nav .nav-link:hover{ color:var(--text); }
+  nav .nav-link::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:1px;
+    background:var(--accent); transition:right 0.3s ease;
+  }
+  nav .nav-link.active{ color:var(--text); }
+  nav .nav-link.active::after{ right:0; }
+  .nav-toggle{ display:none; }
+
+  main{ position:relative; z-index:2; padding-top:0; }
+  .page{ display:none; }
+  .page.active{ display:block; animation:fadein 0.6s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  section{ padding:0 clamp(20px,6vw,80px); }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:11px;
+    letter-spacing:0.16em; text-transform:uppercase; color:var(--accent);
+    display:flex; align-items:center; gap:10px; margin-bottom:18px;
+  }
+  .eyebrow::before{ content:''; width:22px; height:1px; background:var(--accent); }
+
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; font-weight:600; line-height:1.05; text-transform:uppercase; }
+  p{ color:var(--text-dim); line-height:1.7; font-size:15.5px; }
+
+  /* ---------- HOME ---------- */
+  .hero{
+    min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+    padding-top:120px; padding-bottom:80px;
+  }
+  .hero-tag{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    text-transform:uppercase; color:var(--text-faint); margin-bottom:22px;
+  }
+  .hero h1{
+    font-size:clamp(48px, 9vw, 118px); letter-spacing:-0.02em; color:var(--text);
+  }
+  .hero h1 span{ color:var(--accent-home); transition:color 0.5s ease; }
+  .hero-sub{
+    max-width:640px; margin-top:26px; font-size:18px; line-height:1.65;
+    color:var(--text-dim);
+  }
+  .hero-sub b{ color:var(--text); font-weight:500; }
+  .hero-cta{ margin-top:40px; display:flex; gap:16px; flex-wrap:wrap; }
+
+  .btn{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.08em;
+    text-transform:uppercase; padding:13px 26px; text-decoration:none;
+    border:1px solid var(--line-strong); color:var(--text);
+    display:inline-flex; align-items:center; gap:10px;
+    transition:all 0.25s ease; background:rgba(255,255,255,0.02);
+  }
+  .btn:hover{ border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+  .btn.solid{ background:var(--text); color:var(--void); border-color:var(--text); }
+  .btn.solid:hover{ background:var(--accent); border-color:var(--accent); color:var(--void); }
+
+  .divisions{
+    padding:100px clamp(20px,6vw,80px) 60px;
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:1px;
+    background:var(--line); border:1px solid var(--line);
+  }
+  .div-card{
+    background:var(--void); padding:44px 34px; position:relative; overflow:hidden;
+    text-decoration:none; color:var(--text); cursor:pointer;
+    transition:background 0.4s ease; min-height:340px;
+    display:flex; flex-direction:column;
+  }
+  .div-card:hover{ background:var(--panel); }
+  .div-card .glyph{ width:46px; height:46px; margin-bottom:28px; }
+  .div-card .glyph svg{ width:100%; height:100%; }
+  .div-card .num{
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-faint);
+    letter-spacing:0.1em; margin-bottom:auto; position:absolute; top:44px; right:34px;
+  }
+  .div-card h3{ font-size:26px; margin-bottom:12px; }
+  .div-card p{ font-size:14px; margin-bottom:22px; flex:1; }
+  .div-card .go{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em;
+    text-transform:uppercase; display:flex; align-items:center; gap:8px;
+    color:var(--text-faint); transition:all 0.3s ease;
+  }
+  .div-card:hover .go{ color:var(--card-accent); gap:12px; }
+  .div-card[data-div="research"]{ --card-accent: var(--accent-research); }
+  .div-card[data-div="medicine"]{ --card-accent: var(--accent-medicine); }
+  .div-card[data-div="aerospace"]{ --card-accent: var(--accent-aerospace); }
+  .div-card .glyph svg{ stroke:var(--card-accent); }
+
+  .phil-strip{
+    padding:110px clamp(20px,6vw,80px); border-top:1px solid var(--line);
+    display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;
+  }
+  .phil-strip blockquote{
+    font-family:'Space Grotesk', sans-serif; font-size:clamp(24px,2.6vw,34px);
+    font-weight:500; line-height:1.35; color:var(--text);
+  }
+  .phil-strip .side p{ margin-bottom:22px; }
+
+  footer{
+    border-top:1px solid var(--line); padding:34px clamp(20px,6vw,80px);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;
+  }
+  footer span{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-faint); letter-spacing:0.06em; }
+  footer .footer-back{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-faint); letter-spacing:0.06em; text-decoration:none; transition:color 0.25s ease; }
+  footer .footer-back:hover{ color:var(--accent); }
+
+  /* ---------- DIVISION PAGES ---------- */
+  .div-hero{
+    min-height:78vh; display:flex; flex-direction:column; justify-content:center;
+    padding-top:140px; padding-bottom:60px; border-bottom:1px solid var(--line);
+  }
+  .div-hero h1{ font-size:clamp(44px,7vw,88px); letter-spacing:-0.02em; }
+  .div-hero .lede{ max-width:620px; font-size:17px; margin-top:22px; }
+  .div-grid{
+    padding:90px clamp(20px,6vw,80px); display:grid; grid-template-columns:repeat(3,1fr); gap:34px;
+  }
+  .div-item{ border-top:1px solid var(--line); padding-top:20px; }
+  .div-item h4{ font-family:'Space Grotesk', sans-serif; font-size:17px; font-weight:600; margin-bottom:10px; color:var(--text); text-transform:uppercase; }
+  .div-item p{ font-size:14px; }
+  .div-band{
+    padding:90px clamp(20px,6vw,80px); border-top:1px solid var(--line);
+    display:grid; grid-template-columns:0.9fr 1.1fr; gap:60px; align-items:start;
+  }
+  .div-band h2{ font-size:clamp(26px,3vw,36px); }
+  .status-line{
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-faint);
+    display:flex; gap:8px; align-items:center; margin-top:26px; letter-spacing:0.06em;
+  }
+  .status-dot{ width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+  .coming-soon{
+    padding:110px clamp(20px,6vw,80px) 130px; border-top:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:flex-start; gap:20px;
+  }
+  .coming-soon .cs-mark{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--accent); text-transform:uppercase; display:flex; align-items:center; gap:10px;
+  }
+  .coming-soon .cs-mark::before{ content:''; width:22px; height:1px; background:var(--accent); }
+  .coming-soon h2{ font-size:clamp(30px,4.2vw,52px); max-width:720px; }
+  .coming-soon p{ max-width:520px; font-size:15px; }
+
+  /* ---------- PHILOSOPHY ---------- */
+  .phil-hero{ min-height:56vh; display:flex; flex-direction:column; justify-content:flex-end; padding-top:150px; padding-bottom:70px; border-bottom:1px solid var(--line); }
+  .phil-hero h1{ font-size:clamp(40px,6.5vw,80px); }
+  .phil-hero p{ max-width:600px; margin-top:20px; font-size:16.5px; }
+  .principle{
+    padding:64px clamp(20px,6vw,80px); border-bottom:1px solid var(--line);
+    display:grid; grid-template-columns:180px 1fr; gap:40px;
+  }
+  .principle .roman{
+    font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--text-faint);
+    letter-spacing:0.1em; padding-top:6px;
+  }
+  .principle h3{ font-size:clamp(22px,2.6vw,30px); margin-bottom:16px; color:var(--text); }
+  .principle .body p{ margin-bottom:14px; max-width:680px; }
+  .principle .body p:last-child{ margin-bottom:0; }
+  .principle .pull{ color:var(--text); font-weight:500; }
+
+  /* ---------- LOG ---------- */
+  .log-hero{ padding-top:150px; padding-bottom:50px; border-bottom:1px solid var(--line); }
+  .log-hero h1{ font-size:clamp(38px,6vw,68px); }
+  .log-hero p{ max-width:600px; margin-top:18px; }
+  .log-note{
+    font-family:'JetBrains Mono', monospace; font-size:11.5px; color:var(--text-faint);
+    margin-top:20px; display:flex; align-items:center; gap:8px; letter-spacing:0.03em;
+  }
+  .log-note svg{ width:13px; height:13px; flex-shrink:0; }
+
+  .log-body{ padding:60px clamp(20px,6vw,80px) 120px; display:grid; grid-template-columns:340px 1fr; gap:60px; align-items:start; }
+  .log-form{ position:sticky; top:110px; border:1px solid var(--line); padding:28px; background:rgba(255,255,255,0.015); }
+  .log-form h3{ font-size:15px; margin-bottom:20px; text-transform:uppercase; letter-spacing:0.06em; font-family:'JetBrains Mono', monospace; font-weight:500; }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-faint); margin-bottom:7px; }
+  .field input, .field select, .field textarea{
+    width:100%; background:var(--panel); border:1px solid var(--line); color:var(--text);
+    padding:10px 12px; font-family:'Inter', sans-serif; font-size:13.5px; outline:none;
+    transition:border-color 0.2s ease;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--accent); }
+  .field textarea{ resize:vertical; min-height:70px; }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .form-msg{ font-family:'JetBrains Mono', monospace; font-size:11px; margin-top:12px; min-height:14px; color:var(--text-faint); }
+  .form-msg.err{ color:var(--accent-medicine); }
+  .form-msg.ok{ color:var(--accent-research); }
+
+  .entries{ display:flex; flex-direction:column; }
+  .entry{ border-top:1px solid var(--line); padding:26px 0; display:grid; grid-template-columns:90px 1fr; gap:24px; }
+  .entry:last-child{ border-bottom:1px solid var(--line); }
+  .entry-id{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-faint); padding-top:3px; }
+  .entry-head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+  .tag{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+    padding:3px 9px; border:1px solid var(--tag-c); color:var(--tag-c);
+  }
+  .tag.research{ --tag-c:var(--accent-research); }
+  .tag.medicine{ --tag-c:var(--accent-medicine); }
+  .tag.aerospace{ --tag-c:var(--accent-aerospace); }
+  .tag.general{ --tag-c:var(--text-dim); }
+  .entry-date{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-faint); }
+  .entry h4{ font-family:'Space Grotesk', sans-serif; font-size:19px; font-weight:600; margin-bottom:8px; color:var(--text); text-transform:uppercase; }
+  .entry p{ font-size:14px; margin-bottom:10px; }
+  .entry-link{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--accent-home); text-decoration:none; border-bottom:1px solid transparent; }
+  .entry-link:hover{ border-color:currentColor; }
+  .entry-del{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-faint); background:none; border:none; cursor:pointer; margin-left:14px; text-transform:uppercase; letter-spacing:0.06em; }
+  .entry-del:hover{ color:var(--accent-medicine); }
+  .empty-state{ padding:60px 0; text-align:left; color:var(--text-faint); font-family:'JetBrains Mono', monospace; font-size:13px; border-top:1px solid var(--line); }
+  .setup-warning{
+    display:none; margin-top:22px; padding:14px 16px; border:1px solid var(--accent-medicine);
+    background:rgba(232,85,106,0.08); font-family:'JetBrains Mono', monospace; font-size:12px;
+    color:var(--accent-medicine); line-height:1.6;
+  }
+  .auth-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .auth-row h3{ margin-bottom:0; }
+  .auth-hint{ margin-top:14px; font-size:12px; line-height:1.6; color:var(--text-faint); }
+
+  @media (max-width: 880px){
+    nav{ display:none; }
+    .divisions{ grid-template-columns:1fr; }
+    .phil-strip{ grid-template-columns:1fr; gap:30px; }
+    .div-grid{ grid-template-columns:1fr; gap:26px; }
+    .div-band{ grid-template-columns:1fr; }
+    .principle{ grid-template-columns:1fr; gap:14px; }
+    .log-body{ grid-template-columns:1fr; }
+    .log-form{ position:static; }
+    .entry{ grid-template-columns:1fr; gap:6px; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<div class="shell">
+  <header>
+    <button class="brand" data-route="/" data-nav="/">
+      <span class="mark">
+        <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 17 C 8 10, 18 10, 24 17" stroke="currentColor" stroke-width="1.3"/>
+          <circle cx="13" cy="9" r="2.1" fill="currentColor"/>
+        </svg>
+      </span>
+      <span>HDA<small>HORIZON OF DEVELOPMENT ASSOCIATION</small></span>
+    </button>
+    <nav>
+      <button class="nav-link" data-route="/" data-nav="/">Horizon</button>
+      <button class="nav-link" data-route="/research" data-nav="/research">Research</button>
+      <button class="nav-link" data-route="/medicine" data-nav="/medicine">Medicine</button>
+      <button class="nav-link" data-route="/aerospace" data-nav="/aerospace">Aerospace</button>
+      <button class="nav-link" data-route="/philosophy" data-nav="/philosophy">Philosophy</button>
+      <button class="nav-link" data-route="/log" data-nav="/log">Log</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ============ HOME ============ -->
+    <div class="page" id="page-home" data-page="/">
+      <section class="hero">
+        <div class="hero-tag">HDA — HORIZON OF DEVELOPMENT ASSOCIATION</div>
+        <h1>The horizon<br>is not a <span>destination</span>.</h1>
+        <p class="hero-sub">Humanity is capable of far more than it currently achieves. HDA is a long-term framework
+          bringing <b>medicine, science, and aerospace</b> together toward problems worth solving — built in the open,
+          one experiment at a time.</p>
+        <div class="hero-cta">
+          <button class="btn solid" data-route="/philosophy">Read the philosophy</button>
+          <button class="btn" data-route="/log">Open the log</button>
+        </div>
+      </section>
+
+      <div class="divisions">
+        <button class="div-card" data-route="/research" data-div="research">
+          <span class="num">DIV / 01</span>
+          <span class="glyph"><svg viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="23" cy="10" r="3" stroke-width="1.4"/><circle cx="9" cy="30" r="3" stroke-width="1.4"/><circle cx="37" cy="30" r="3" stroke-width="1.4"/><circle cx="23" cy="38" r="3" stroke-width="1.4"/><path d="M23 13 L9 27 M23 13 L37 27 M9 33 L21 38 M37 33 L25 38 M11.5 30 L34.5 30" stroke-width="1.2"/></svg></span>
+          <h3>HDA Research</h3>
+          <p>Open inquiry across propulsion, biotechnology, robotics, and planetary defense — hypotheses, data, and honest failure, documented as it happens.</p>
+          <span class="go">Enter division →</span>
+        </button>
+        <button class="div-card" data-route="/medicine" data-div="medicine">
+          <span class="num">DIV / 02</span>
+          <span class="glyph"><svg viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 24h8l4-11 6 20 5-14 3 5h12" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <h3>HDA Medicine</h3>
+          <p>A clinical foundation built from first principles — pathology, pharmacology, and the long arc from MBBS toward specialization.</p>
+          <span class="go">Enter division →</span>
+        </button>
+        <button class="div-card" data-route="/aerospace" data-div="aerospace">
+          <span class="num">DIV / 03</span>
+          <span class="glyph"><svg viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M23 4 C 30 12, 30 26, 23 42 C 16 26, 16 12, 23 4 Z" stroke-width="1.4"/><path d="M23 4 C 30 12, 30 26, 23 42" stroke-width="1.4"/><path d="M17 30 L10 38 M29 30 L36 38" stroke-width="1.4" stroke-linecap="round"/><circle cx="23" cy="16" r="2.2" stroke-width="1.2"/></svg></span>
+          <h3>HDA Aerospace</h3>
+          <p>Propulsion, orbital mechanics, and planetary defense — from amateur solid-motor ballistics toward systems that matter at scale.</p>
+          <span class="go">Enter division →</span>
+        </button>
+      </div>
+
+      <div class="phil-strip">
+        <blockquote>"We do not seek to know everything. We seek to become capable of learning anything necessary."</blockquote>
+        <div class="side">
+          <p>HDA is not a single company, lab, or hospital. It's a long-term framework for pulling medicine, science,
+            and engineering toward problems that matter — healthcare, survival, discovery, and infrastructure — built
+            with evidence before ego, and capability before scale.</p>
+          <button class="btn" data-route="/philosophy">Read the full philosophy</button>
+        </div>
+      </div>
+
+      <footer>
+        <span>HDA © EST. — LONG HORIZON</span>
+        <span>BUILD. MEASURE. LEARN. REPEAT.</span>
+      </footer>
+    </div>
+
+    <!-- ============ RESEARCH ============ -->
+    <div class="page" id="page-research" data-page="/research">
+      <section class="div-hero">
+        <div class="eyebrow">HDA / 01 — Research</div>
+        <h1>Evidence outranks<br>confidence.</h1>
+        <p class="lede">HDA Research is the experimental core of the organization — where ideas become hypotheses,
+          hypotheses become tests, and tests become the understanding everything else is built on. Nothing here is
+          claimed until it's shown.</p>
+        <div class="status-line"><span class="status-dot"></span> ACTIVE — LOGGING TO HDA LOG</div>
+      </section>
+
+      <section class="coming-soon">
+        <span class="cs-mark">Coming soon</span>
+        <h2>This division is still being built.</h2>
+        <p>Detailed content for HDA Research is on its way. In the meantime, findings and works-in-progress that are
+          ready to share are posted straight to the <button class="entry-link" data-route="/log" style="color:var(--accent-research)">HDA Log</button>, tagged
+          <span class="tag research" style="display:inline-flex;vertical-align:middle;margin:0 4px;">Research</span>.</p>
+      </section>
+
+      <footer><span>HDA RESEARCH</span><button class="footer-back" data-route="/">← HORIZON</button></footer>
+    </div>
+
+    <!-- ============ MEDICINE ============ -->
+    <div class="page" id="page-medicine" data-page="/medicine">
+      <section class="div-hero">
+        <div class="eyebrow">HDA / 02 — Medicine</div>
+        <h1>Preserve life.<br>Understand why.</h1>
+        <p class="lede">HDA Medicine is the clinical spine of the association — training built from MBBS through MD
+          and into specialization, grounded in the belief that medicine exists to preserve and improve life, not to
+          decorate a résumé.</p>
+        <div class="status-line"><span class="status-dot"></span> ACTIVE — CLINICAL TRACK IN PROGRESS</div>
+      </section>
+
+      <section class="coming-soon">
+        <span class="cs-mark">Coming soon</span>
+        <h2>This division is still being built.</h2>
+        <p>Detailed content for HDA Medicine is on its way. In the meantime, clinical notes and case-based writing
+          worth sharing are posted straight to the <button class="entry-link" data-route="/log" style="color:var(--accent-medicine)">HDA Log</button>, tagged
+          <span class="tag medicine" style="display:inline-flex;vertical-align:middle;margin:0 4px;">Medicine</span>.</p>
+      </section>
+
+      <footer><span>HDA MEDICINE</span><button class="footer-back" data-route="/">← HORIZON</button></footer>
+    </div>
+
+    <!-- ============ AEROSPACE ============ -->
+    <div class="page" id="page-aerospace" data-page="/aerospace">
+      <section class="div-hero">
+        <div class="eyebrow">HDA / 03 — Aerospace</div>
+        <h1>From a static<br>test stand upward.</h1>
+        <p class="lede">HDA Aerospace starts where most amateur rocketry does — homemade solid motors and
+          high-altitude launches — and works outward toward the propulsion, orbital, and planetary-defense systems
+          that the rest of the mission eventually needs.</p>
+        <div class="status-line"><span class="status-dot"></span> ACTIVE — SRM BALLISTICS IN PROGRESS</div>
+      </section>
+
+      <section class="coming-soon">
+        <span class="cs-mark">Coming soon</span>
+        <h2>This division is still being built.</h2>
+        <p>Detailed content for HDA Aerospace is on its way. In the meantime, launch logs, ballistics notes, and
+          design writeups are posted straight to the <button class="entry-link" data-route="/log" style="color:var(--accent-aerospace)">HDA Log</button>, tagged
+          <span class="tag aerospace" style="display:inline-flex;vertical-align:middle;margin:0 4px;">Aerospace</span>.</p>
+      </section>
+
+      <footer><span>HDA AEROSPACE</span><button class="footer-back" data-route="/">← HORIZON</button></footer>
+    </div>
+
+    <!-- ============ PHILOSOPHY ============ -->
+    <div class="page" id="page-philosophy" data-page="/philosophy">
+      <section class="phil-hero">
+        <div class="eyebrow">What HDA truly is</div>
+        <h1>The horizon is where<br>we begin asking<br>what comes next.</h1>
+        <p>HDA does not promise every problem can be solved. It promises to continuously increase its ability to
+          solve them — with evidence instead of ego, and ambition backed by competence instead of ambition alone.</p>
+      </section>
+
+      <section class="principle">
+        <div class="roman">I — FOUNDATION</div>
+        <div class="body">
+          <h3>The horizon is not a destination</h3>
+          <p><span class="pull">Humanity is capable of far more than it currently achieves.</span> The limits we
+            encounter are rarely absolute — they're limits of knowledge, technology, organization, resources,
+            courage, and imagination. HDA exists to push those limits, not for the sake of power or a name, but
+            because the ability to solve a problem creates a responsibility to eventually solve it.</p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">II — SCOPE</div>
+        <div class="body">
+          <h3>We build for what comes next</h3>
+          <p>HDA is not meant to be a single company, laboratory, hospital, or institution. It's a long-term
+            framework bringing medicine, science, engineering, technology, research, education, and entrepreneurship
+            toward problems that matter — healthcare, human survival, discovery, aerospace, planetary defense,
+            education, infrastructure, and eventually problems we haven't yet learned how to name.</p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">III — ORDER</div>
+        <div class="body">
+          <h3>Capability before scale</h3>
+          <p>Before infrastructure comes knowledge. Before knowledge comes learning. Before large projects come
+            small experiments. Before organizations come individuals capable of building them. HDA begins small —
+            a student learning, a failed experiment documented, a question nobody has answered yet — and never
+            pretends to possess capabilities it hasn't earned.</p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">IV — METHOD</div>
+        <div class="body">
+          <h3>Efficiency is a principle</h3>
+          <p>Effort is a resource — so are time, money, energy, and attention, and they should be used
+            intelligently. If a machine performs a task better, use the machine. If AI can accelerate it, use AI.
+            Using tools isn't weakness; it's intelligence applied to resource allocation. The goal isn't to make
+            humans work harder — it's to make humanity capable of accomplishing more.</p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">V — PURPOSE</div>
+        <div class="body">
+          <h3>Humans remain at the center</h3>
+          <p>Technology, AI, automation, and economic growth are not the objective — <span class="pull">human
+            capability and human well-being are.</span> The purpose of automation is to free people from unnecessary
+            work; the purpose of medicine is to preserve life; the purpose of science is to understand reality;
+            the purpose of wealth is to fund what gets built.</p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">VI — LEADERSHIP</div>
+        <div class="body">
+          <h3>Learn before you lead</h3>
+          <p>Leadership without understanding is dangerous. No one is expected to master every discipline, but
+            everyone directing complex systems must understand them well enough to ask the right questions,
+            recognize bad assumptions, and communicate with specialists. HDA doesn't seek to know everything — it
+            seeks to become capable of learning anything necessary.</p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">VII — DISCIPLINE</div>
+        <div class="body">
+          <h3>Science before ego</h3>
+          <p>Evidence outranks confidence. Experiment outranks assumption. Reality outranks ideology. A failed
+            experiment isn't an embarrassment if it teaches something; a successful one isn't a victory if no one
+            understands why it worked. HDA would rather publish <i>"we tried, it failed, here's what we
+            learned"</i> than a success no one can explain.</p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">VIII — LOOP</div>
+        <div class="body">
+          <h3>Build, measure, learn, repeat</h3>
+          <p>Ideas become hypotheses. Hypotheses become experiments. Experiments generate data. Data produces
+            understanding. Understanding produces better designs, and those designs create new questions. There is
+            no final version.</p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">IX — RESOURCES</div>
+        <div class="body">
+          <h3>Capital is a tool, not the mission</h3>
+          <p>Ambitious projects require resources, and capital allows ideas to become infrastructure — but wealth
+            itself is not the destination. Capital is fuel; the objective is what the fuel allows HDA to build.
+            Financial sustainability is pursued without letting financial incentive become the purpose.</p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">X — INTEGRITY</div>
+        <div class="body">
+          <h3>We do not worship the impossible</h3>
+          <p>Difficulty alone doesn't make something worthwhile. HDA distinguishes between what's impossible,
+            currently impractical, technically difficult, and simply not attempted seriously yet. Dreams are
+            permitted to be enormous — <span class="pull">claims are not.</span></p>
+        </div>
+      </section>
+
+      <section class="principle">
+        <div class="roman">XI — TIMESCALE</div>
+        <div class="body">
+          <h3>Think beyond a lifetime</h3>
+          <p>Some projects are worth more than the person who begins them, and HDA is meant to be one. Its purpose
+            shouldn't depend on one individual staying alive, famous, or remembered. The measure of HDA is never
+            "how powerful was its founder" — it's <span class="pull">how much more capable was humanity because HDA
+            existed.</span></p>
+        </div>
+      </section>
+
+      <section class="principle" style="border-bottom:none;">
+        <div class="roman">XII — THE PRINCIPLE</div>
+        <div class="body">
+          <h3>The long horizon</h3>
+          <p>Learn what is unknown. Build what is possible. Improve what already exists. Solve what can be solved.
+            And prepare humanity for what cannot yet be predicted. HDA doesn't promise every problem can be solved —
+            it promises to continuously increase its ability to solve them. Because the horizon is not where
+            humanity stops. <span class="pull">It's where we begin asking what comes next.</span></p>
+        </div>
+      </section>
+
+      <footer><span>HDA PHILOSOPHY</span><button class="footer-back" data-route="/">← HORIZON</button></footer>
+    </div>
+
+    <!-- ============ LOG ============ -->
+    <div class="page" id="page-log" data-page="/log">
+      <section class="log-hero">
+        <div class="eyebrow">Mission Log</div>
+        <h1>HDA Log</h1>
+        <p>A running record of research, projects, papers, and notes worth sharing — logged as it happens, across
+          every division.</p>
+        <div class="log-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg>
+          Entries are public to read. Only the signed-in HDA admin account can publish or remove them.
+        </div>
+        <div class="setup-warning" id="supabase-warning">
+          Supabase isn't connected yet. Open this file, find SUPABASE_URL and SUPABASE_ANON_KEY near the top of the
+          script, and replace them with your own project's values.
+        </div>
+      </section>
+
+      <section class="log-body">
+        <div class="log-form">
+          <div id="auth-signed-out">
+            <h3>Admin sign in</h3>
+            <div class="field">
+              <label for="auth-email">Email</label>
+              <input id="auth-email" type="email" placeholder="you@example.com">
+            </div>
+            <div class="field">
+              <label for="auth-password">Password</label>
+              <input id="auth-password" type="password" placeholder="••••••••">
+            </div>
+            <button class="btn solid" id="auth-signin" style="width:100%; justify-content:center;">Sign in</button>
+            <div class="form-msg" id="auth-msg"></div>
+            <p class="auth-hint">Signed-in access is for the HDA admin account only. Everyone else sees the log
+              read-only — no sign-in needed to browse entries below.</p>
+          </div>
+
+          <div id="auth-signed-in" style="display:none;">
+            <div class="auth-row">
+              <h3>New entry</h3>
+              <button class="entry-del" id="auth-signout">Sign out</button>
+            </div>
+            <div class="field">
+              <label for="f-title">Title</label>
+              <input id="f-title" type="text" placeholder="e.g. End-burning grain design pass">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="f-division">Division</label>
+                <select id="f-division">
+                  <option value="research">Research</option>
+                  <option value="medicine">Medicine</option>
+                  <option value="aerospace">Aerospace</option>
+                  <option value="general">General</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="f-type">Type</label>
+                <select id="f-type">
+                  <option value="Project">Project</option>
+                  <option value="Research">Research</option>
+                  <option value="Paper">Paper</option>
+                  <option value="Note">Note</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="f-summary">Summary</label>
+              <textarea id="f-summary" placeholder="What is this, and why does it matter?"></textarea>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="f-link">Link (optional)</label>
+                <input id="f-link" type="text" placeholder="https://...">
+              </div>
+              <div class="field">
+                <label for="f-linklabel">Link label</label>
+                <input id="f-linklabel" type="text" placeholder="Read paper">
+              </div>
+            </div>
+            <button class="btn solid" id="f-submit" style="width:100%; justify-content:center; cursor:pointer; border:1px solid var(--text);">Publish entry</button>
+            <div class="form-msg" id="f-msg"></div>
+          </div>
+        </div>
+
+        <div class="entries" id="entries-list">
+          <div class="empty-state" id="entries-loading">Loading log…</div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ================= ROUTER ================= */
+/* Pure in-page routing — no URL/hash changes, so nothing can ever be
+   intercepted by an outer page. Navigation happens entirely via the
+   `route` variable and click handlers on [data-route] elements. */
+const routes = ['/', '/research', '/medicine', '/aerospace', '/philosophy', '/log'];
+const accentMap = {
+  '/': 'var(--accent-home)',
+  '/research': 'var(--accent-research)',
+  '/medicine': 'var(--accent-medicine)',
+  '/aerospace': 'var(--accent-aerospace)',
+  '/philosophy': 'var(--accent-home)',
+  '/log': 'var(--accent-home)',
+};
+const hueMap = { '/':'#c9d3e0', '/research':'#4dd8c4', '/medicine':'#e8556a', '/aerospace':'#8ba0ff', '/philosophy':'#c9d3e0', '/log':'#c9d3e0' };
+
+let route = '/';
+
+function goTo(r){
+  if(!routes.includes(r)) r = '/';
+  route = r;
+  render();
+}
+
+function render(){
+  const r = route;
+  document.querySelectorAll('.page').forEach(p=>{
+    p.classList.toggle('active', p.getAttribute('data-page') === r);
+  });
+  document.querySelectorAll('.nav-link').forEach(a=>{
+    a.classList.toggle('active', a.getAttribute('data-nav') === r);
+  });
+  document.documentElement.style.setProperty('--accent', accentMap[r]);
+  targetHue = hexToRgb(hueMap[r]);
+  window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
+  if(r === '/log') loadEntries();
+}
+
+// Single delegated listener handles every internal nav element —
+// buttons only, never anchors, so there's no href for a host page to grab.
+document.addEventListener('click', function(e){
+  const el = e.target.closest('[data-route]');
+  if(!el) return;
+  e.preventDefault();
+  e.stopPropagation();
+  goTo(el.getAttribute('data-route'));
+});
+
+window.addEventListener('DOMContentLoaded', render);
+
+/* ================= BACKGROUND: horizon + stars ================= */
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+let W, H, DPR;
+let stars = [];
+let currentColor = {r:201,g:211,b:224};
+let targetHue = {r:201,g:211,b:224};
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function hexToRgb(hex){
+  const v = parseInt(hex.slice(1),16);
+  return { r:(v>>16)&255, g:(v>>8)&255, b:v&255 };
+}
+
+function resize(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W*DPR; canvas.height = H*DPR;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  const count = Math.floor((W*H)/9000);
+  stars = [];
+  for(let i=0;i<count;i++){
+    stars.push({
+      x: Math.random()*W,
+      y: Math.random()*H*0.72,
+      r: Math.random()*1.3 + 0.25,
+      baseAlpha: Math.random()*0.6 + 0.15,
+      phase: Math.random()*Math.PI*2,
+      speed: Math.random()*0.15 + 0.03,
+      driftX: (Math.random()-0.5)*0.04
+    });
+  }
+}
+window.addEventListener('resize', resize);
+resize();
+
+let t = 0;
+function draw(){
+  t += reduceMotion ? 0 : 0.012;
+
+  // ease color toward target
+  currentColor.r += (targetHue.r - currentColor.r) * 0.02;
+  currentColor.g += (targetHue.g - currentColor.g) * 0.02;
+  currentColor.b += (targetHue.b - currentColor.b) * 0.02;
+  const c = `${Math.round(currentColor.r)},${Math.round(currentColor.g)},${Math.round(currentColor.b)}`;
+
+  ctx.clearRect(0,0,W,H);
+
+  // deep vertical gradient
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0, '#06070a');
+  g.addColorStop(0.6, '#06070a');
+  g.addColorStop(1, '#0a0d12');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+
+  // stars
+  stars.forEach(s=>{
+    const a = s.baseAlpha + Math.sin(t*s.speed*6 + s.phase)*0.18;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(${c}, ${Math.max(a,0.05)})`;
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fill();
+    if(!reduceMotion){
+      s.x += s.driftX;
+      if(s.x < -5) s.x = W+5;
+      if(s.x > W+5) s.x = -5;
+    }
+  });
+
+  // horizon line — signature element
+  const baseY = H*0.74;
+  const amp = 26;
+  ctx.beginPath();
+  for(let x=0; x<=W; x+=8){
+    const y = baseY + Math.sin((x/W)*Math.PI*1.15 + t*0.25)*amp*0.35
+                     + Math.sin((x/W)*Math.PI*3.4 - t*0.4)*amp*0.12;
+    if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = `rgba(${c}, 0.55)`;
+  ctx.lineWidth = 1.1;
+  ctx.shadowColor = `rgba(${c}, 0.9)`;
+  ctx.shadowBlur = 14;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // glow beneath horizon
+  const glow = ctx.createLinearGradient(0, baseY, 0, H);
+  glow.addColorStop(0, `rgba(${c}, 0.10)`);
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, baseY, W, H-baseY);
+
+  // faint ground grid
+  ctx.strokeStyle = `rgba(${c}, 0.05)`;
+  ctx.lineWidth = 1;
+  for(let i=1;i<=7;i++){
+    const y = baseY + i*(H-baseY)/9;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ================= LOG: SUPABASE ================= */
+// 1. Create a free project at supabase.com
+// 2. In the SQL editor, run the table + policy script from the setup guide
+// 3. Paste your project's URL and anon public key below (Settings -> API)
+const SUPABASE_URL = "https://atrxbevtvugsajizceuk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0cnhiZXZ0dnVnc2FqaXpjZXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNjY1ODUsImV4cCI6MjEwMTg0MjU4NX0.b0SBXgTQ2EuB334eC5q5XrC5Vk-NKV0ywQj1TlRNRGE";
+
+
+const supabaseConfigured = !SUPABASE_URL.includes('YOUR_') && !SUPABASE_ANON_KEY.includes('YOUR_');
+const sb = supabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+if(!supabaseConfigured){
+  const w = document.getElementById('supabase-warning');
+  if(w) w.style.display = 'block';
+}
+
+const entriesList = document.getElementById('entries-list');
+const fMsg = document.getElementById('f-msg');
+const authMsg = document.getElementById('auth-msg');
+const signedOutPanel = document.getElementById('auth-signed-out');
+const signedInPanel = document.getElementById('auth-signed-in');
+let entriesCache = [];
+let isAdmin = false;
+
+function updateAuthUI(){
+  signedOutPanel.style.display = isAdmin ? 'none' : 'block';
+  signedInPanel.style.display = isAdmin ? 'block' : 'none';
+}
+
+async function initAuth(){
+  if(!sb) return;
+  const { data:{ session } } = await sb.auth.getSession();
+  isAdmin = !!session;
+  updateAuthUI();
+  sb.auth.onAuthStateChange((_event, session)=>{
+    isAdmin = !!session;
+    updateAuthUI();
+    renderEntries();
+  });
+}
+initAuth();
+
+document.getElementById('auth-signin').addEventListener('click', async ()=>{
+  if(!sb) return;
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if(!email || !password){
+    authMsg.textContent = 'Enter your email and password.';
+    authMsg.className = 'form-msg err';
+    return;
+  }
+  authMsg.textContent = 'Signing in…';
+  authMsg.className = 'form-msg';
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){
+    authMsg.textContent = error.message;
+    authMsg.className = 'form-msg err';
+    return;
+  }
+  authMsg.textContent = '';
+  isAdmin = true;
+  updateAuthUI();
+});
+
+document.getElementById('auth-signout').addEventListener('click', async ()=>{
+  if(!sb) return;
+  await sb.auth.signOut();
+  isAdmin = false;
+  updateAuthUI();
+  renderEntries();
+});
+
+async function loadEntries(){
+  if(!sb){
+    entriesList.innerHTML = '<div class="empty-state">Log is offline until Supabase is configured — see the notice above.</div>';
+    return;
+  }
+  entriesList.innerHTML = '<div class="empty-state" id="entries-loading">Loading log…</div>';
+  try{
+    const { data, error } = await sb.from('log_entries').select('*').order('created_at', { ascending:false });
+    if(error) throw error;
+    entriesCache = data || [];
+    renderEntries();
+  }catch(e){
+    entriesList.innerHTML = '<div class="empty-state">Could not load the log right now. Try refreshing.</div>';
+    console.error('loadEntries error', e);
+  }
+}
+
+function renderEntries(){
+  if(entriesCache.length === 0){
+    entriesList.innerHTML = '<div class="empty-state">No entries yet.' + (isAdmin ? ' Publish the first one from the panel on the left.' : '') + '</div>';
+    return;
+  }
+  entriesList.innerHTML = entriesCache.map((e, i)=>{
+    const num = String(entriesCache.length - i).padStart(4,'0');
+    const div = ['research','medicine','aerospace'].includes(e.division) ? e.division : 'general';
+    const dateStr = e.created_at ? new Date(e.created_at).toLocaleDateString(undefined, {year:'numeric', month:'short', day:'numeric'}) : '';
+    const link = e.link ? `<a class="entry-link" href="${escapeAttr(e.link)}" target="_blank" rel="noopener">${escapeHtml(e.link_label || 'View source')} ↗</a>` : '';
+    const del = isAdmin ? `<button class="entry-del" data-del="${escapeAttr(e.id)}">Remove</button>` : '';
+    return `
+      <div class="entry" data-id="${escapeAttr(e.id)}">
+        <div class="entry-id">ENTRY<br>${num}</div>
+        <div>
+          <div class="entry-head">
+            <span class="tag ${div}">${escapeHtml(e.type || 'Note')}</span>
+            <span class="tag ${div}" style="opacity:0.6;">${escapeHtml(div)}</span>
+            <span class="entry-date">${escapeHtml(dateStr)}</span>
+          </div>
+          <h4>${escapeHtml(e.title)}</h4>
+          <p>${escapeHtml(e.summary)}</p>
+          <div style="display:flex; align-items:center;">
+            ${link}
+            ${del}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  entriesList.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.getAttribute('data-del');
+      btn.textContent = '...';
+      try{
+        const { error } = await sb.from('log_entries').delete().eq('id', id);
+        if(error) throw error;
+        entriesCache = entriesCache.filter(e=>e.id !== id);
+        renderEntries();
+      }catch(e){ btn.textContent = 'Failed'; console.error('delete error', e); }
+    });
+  });
+}
+
+function escapeHtml(str){
+  return String(str ?? '').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(str){ return escapeHtml(str); }
+
+document.getElementById('f-submit').addEventListener('click', async ()=>{
+  if(!sb) return;
+  const title = document.getElementById('f-title').value.trim();
+  const division = document.getElementById('f-division').value;
+  const type = document.getElementById('f-type').value;
+  const summary = document.getElementById('f-summary').value.trim();
+  const link = document.getElementById('f-link').value.trim();
+  const linkLabel = document.getElementById('f-linklabel').value.trim();
+
+  if(!title || !summary){
+    fMsg.textContent = 'Title and summary are required.';
+    fMsg.className = 'form-msg err';
+    return;
+  }
+
+  fMsg.textContent = 'Publishing…';
+  fMsg.className = 'form-msg';
+  try{
+    const { data, error } = await sb.from('log_entries')
+      .insert([{ title, division, type, summary, link: link || null, link_label: linkLabel || null }])
+      .select();
+    if(error) throw error;
+    fMsg.textContent = 'Published.';
+    fMsg.className = 'form-msg ok';
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-summary').value = '';
+    document.getElementById('f-link').value = '';
+    document.getElementById('f-linklabel').value = '';
+    if(data && data[0]){
+      entriesCache.unshift(data[0]);
+      renderEntries();
+    }
+  }catch(e){
+    fMsg.textContent = 'Could not publish. Try again.';
+    fMsg.className = 'form-msg err';
+    console.error('publish error', e);
+  }
+});
+</script>
+</body>
+</html>
