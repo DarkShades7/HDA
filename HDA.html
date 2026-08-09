@@ -228,6 +228,10 @@
   .coming-soon .cs-mark::before{ content:''; width:22px; height:1px; background:var(--accent); }
   .coming-soon h2{ font-size:clamp(30px,4.2vw,52px); max-width:720px; }
   .coming-soon p{ max-width:520px; font-size:15px; }
+  .div-entries-wrap{
+    padding:100px clamp(20px,6vw,80px) 120px; border-top:1px solid var(--line);
+  }
+  .div-entries-wrap h2{ font-size:clamp(28px,3.4vw,42px); margin-bottom:40px; max-width:640px; }
 
   /* ---------- PHILOSOPHY ---------- */
   .phil-hero{ min-height:56vh; display:flex; flex-direction:column; justify-content:flex-end; padding-top:150px; padding-bottom:70px; border-bottom:1px solid var(--line); }
@@ -411,12 +415,12 @@
         <div class="status-line"><span class="status-dot"></span> ACTIVE — LOGGING TO HDA LOG</div>
       </section>
 
-      <section class="coming-soon">
-        <span class="cs-mark">Coming soon</span>
-        <h2>This division is still being built.</h2>
-        <p>Detailed content for HDA Research is on its way. In the meantime, findings and works-in-progress that are
-          ready to share are posted straight to the <button class="entry-link" data-route="/log" style="color:var(--accent-research)">HDA Log</button>, tagged
-          <span class="tag research" style="display:inline-flex;vertical-align:middle;margin:0 4px;">Research</span>.</p>
+      <section class="div-entries-wrap">
+        <div class="eyebrow">From the log</div>
+        <h2>Research, Papers &amp; Projects</h2>
+        <div class="entries" id="research-entries">
+          <div class="empty-state" id="research-entries-loading">Loading…</div>
+        </div>
       </section>
 
       <footer><span>HDA RESEARCH</span><button class="footer-back" data-route="/">← HORIZON</button></footer>
@@ -735,6 +739,7 @@ function render(){
   targetHue = hexToRgb(hueMap[r]);
   window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
   if(r === '/log') loadEntries();
+  if(r === '/research') loadDivisionEntries('research', 'research-entries', ['Paper','Research','Project']);
 }
 
 // Single delegated listener handles every internal nav element —
@@ -1030,6 +1035,57 @@ document.getElementById('f-submit').addEventListener('click', async ()=>{
     console.error('publish error', e);
   }
 });
+
+/* ================= DIVISION PAGE LOG FEEDS ================= */
+// Reusable: pull entries for a given division (optionally filtered by
+// entry type) and render them into a target container, read-only.
+async function loadDivisionEntries(division, containerId, types){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  if(!sb){
+    container.innerHTML = '<div class="empty-state">Log is offline until Supabase is configured — see the Log page.</div>';
+    return;
+  }
+  container.innerHTML = '<div class="empty-state">Loading…</div>';
+  try{
+    const { data, error } = await sb.from('log_entries')
+      .select('*')
+      .eq('division', division)
+      .order('created_at', { ascending:false });
+    if(error) throw error;
+    let items = data || [];
+    if(types && types.length) items = items.filter(e => types.includes(e.type));
+    renderDivisionEntries(container, items, division);
+  }catch(e){
+    container.innerHTML = '<div class="empty-state">Could not load entries right now. Try refreshing.</div>';
+    console.error('loadDivisionEntries error', e);
+  }
+}
+
+function renderDivisionEntries(container, items, division){
+  if(items.length === 0){
+    container.innerHTML = `<div class="empty-state">Nothing published here yet — check the full <button class="entry-link" data-route="/log" style="color:var(--accent-${division})">HDA Log</button>.</div>`;
+    return;
+  }
+  container.innerHTML = items.map((e, i)=>{
+    const num = String(items.length - i).padStart(4,'0');
+    const dateStr = e.created_at ? new Date(e.created_at).toLocaleDateString(undefined, {year:'numeric', month:'short', day:'numeric'}) : '';
+    const link = e.link ? `<a class="entry-link" href="${escapeAttr(e.link)}" target="_blank" rel="noopener">${escapeHtml(e.link_label || 'View source')} ↗</a>` : '';
+    return `
+      <div class="entry">
+        <div class="entry-id">ENTRY<br>${num}</div>
+        <div>
+          <div class="entry-head">
+            <span class="tag ${division}">${escapeHtml(e.type || 'Note')}</span>
+            <span class="entry-date">${escapeHtml(dateStr)}</span>
+          </div>
+          <h4>${escapeHtml(e.title)}</h4>
+          <p>${escapeHtml(e.summary)}</p>
+          ${link}
+        </div>
+      </div>`;
+  }).join('');
+}
 </script>
 </body>
 </html>
