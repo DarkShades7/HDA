@@ -198,6 +198,7 @@
   .div-hero{
     min-height:78vh; display:flex; flex-direction:column; justify-content:center;
     padding-top:140px; padding-bottom:60px; border-bottom:1px solid var(--line);
+    position:relative; z-index:0; overflow:hidden;
   }
   .div-hero h1{ font-size:clamp(44px,7vw,88px); letter-spacing:-0.02em; }
   .div-hero .lede{ max-width:620px; font-size:17px; margin-top:22px; }
@@ -232,6 +233,89 @@
     padding:100px clamp(20px,6vw,80px) 120px; border-top:1px solid var(--line);
   }
   .div-entries-wrap h2{ font-size:clamp(28px,3.4vw,42px); margin-bottom:40px; max-width:640px; }
+
+  /* ---------- DIVISION BACKGROUND ANIMATIONS ---------- */
+  .bg-anim{ position:absolute; inset:0; z-index:-1; pointer-events:none; overflow:hidden; }
+
+  /* — Research: scanning signal grid — */
+  .bg-anim-research .scan-grid{
+    position:absolute; inset:-20%;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:56px 56px;
+    opacity:0.5;
+    animation:grid-drift 26s linear infinite;
+  }
+  @keyframes grid-drift{ from{ transform:translate(0,0); } to{ transform:translate(56px,56px); } }
+  .bg-anim-research .scanner{
+    position:absolute; left:0; right:0; top:0; height:1px;
+    background:linear-gradient(90deg, transparent, var(--accent-research), transparent);
+    box-shadow:0 0 14px var(--accent-research);
+    animation:scan-sweep 6.5s ease-in-out infinite;
+  }
+  @keyframes scan-sweep{
+    0%{ top:0%; opacity:0; } 10%{ opacity:0.9; } 50%{ top:100%; opacity:0.9; }
+    62%{ opacity:0; } 100%{ top:100%; opacity:0; }
+  }
+  .bg-anim-research .node{
+    position:absolute; width:5px; height:5px; border-radius:50%;
+    background:var(--accent-research); box-shadow:0 0 9px var(--accent-research);
+    animation:node-pulse 3.4s ease-in-out infinite;
+  }
+  @keyframes node-pulse{
+    0%,100%{ opacity:0.2; transform:scale(0.7); } 50%{ opacity:1; transform:scale(1.35); }
+  }
+  .bg-anim-research .n1{ top:18%; left:12%; animation-delay:0s; }
+  .bg-anim-research .n2{ top:32%; left:78%; animation-delay:0.5s; }
+  .bg-anim-research .n3{ top:64%; left:22%; animation-delay:1.1s; }
+  .bg-anim-research .n4{ top:74%; left:66%; animation-delay:1.7s; }
+  .bg-anim-research .n5{ top:44%; left:48%; animation-delay:2.2s; }
+  .bg-anim-research .n6{ top:12%; left:58%; animation-delay:2.8s; }
+
+  /* — Medicine: living pulse / EKG line — */
+  .bg-anim-medicine .pulse-glow{
+    position:absolute; left:50%; top:48%; width:560px; height:560px; margin:-280px 0 0 -280px;
+    background:radial-gradient(circle, var(--accent-medicine) 0%, transparent 68%);
+    opacity:0.22;
+    animation:heartbeat 5.4s ease-in-out infinite;
+  }
+  @keyframes heartbeat{
+    0%{ transform:scale(1); opacity:0.18; }
+    8%{ transform:scale(1.12); opacity:0.34; }
+    16%{ transform:scale(1); opacity:0.18; }
+    24%{ transform:scale(1.22); opacity:0.4; }
+    36%{ transform:scale(1); opacity:0.16; }
+    100%{ transform:scale(1); opacity:0.16; }
+  }
+  .bg-anim-medicine .ekg-track{
+    position:absolute; left:-10%; right:-10%; top:56%; height:80px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='80'%3E%3Cpath d='M0 40 L60 40 L75 40 L85 10 L95 70 L105 40 L120 40 L300 40' fill='none' stroke='%23e8556a' stroke-width='2'/%3E%3C/svg%3E");
+    background-repeat:repeat-x;
+    background-size:300px 80px;
+    opacity:0.55;
+    filter:drop-shadow(0 0 5px var(--accent-medicine));
+    animation:ekg-scroll 4.2s linear infinite;
+  }
+  @keyframes ekg-scroll{ from{ background-position-x:0; } to{ background-position-x:-300px; } }
+
+  /* — Aerospace: orbital field — */
+  .bg-anim-aerospace .orbit{
+    position:absolute; top:50%; left:50%; border-radius:50%;
+    border:1px solid var(--line-strong); opacity:0.5;
+  }
+  .bg-anim-aerospace .orbit-1{ width:320px; height:320px; margin:-160px 0 0 -160px; animation:orbit-spin 24s linear infinite; }
+  .bg-anim-aerospace .orbit-2{ width:540px; height:540px; margin:-270px 0 0 -270px; animation:orbit-spin 40s linear infinite reverse; }
+  .bg-anim-aerospace .orbit-3{ width:780px; height:780px; margin:-390px 0 0 -390px; animation:orbit-spin 58s linear infinite; }
+  @keyframes orbit-spin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+  .bg-anim-aerospace .sat{
+    position:absolute; top:-3px; left:50%; width:6px; height:6px; margin-left:-3px;
+    border-radius:50%; background:var(--accent-aerospace); box-shadow:0 0 10px var(--accent-aerospace);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .bg-anim *{ animation:none !important; }
+  }
 
   /* ---------- PHILOSOPHY ---------- */
   .phil-hero{ min-height:56vh; display:flex; flex-direction:column; justify-content:flex-end; padding-top:150px; padding-bottom:70px; border-bottom:1px solid var(--line); }
@@ -407,6 +491,12 @@
     <!-- ============ RESEARCH ============ -->
     <div class="page" id="page-research" data-page="/research">
       <section class="div-hero">
+        <div class="bg-anim bg-anim-research" aria-hidden="true">
+          <div class="scan-grid"></div>
+          <div class="scanner"></div>
+          <span class="node n1"></span><span class="node n2"></span><span class="node n3"></span>
+          <span class="node n4"></span><span class="node n5"></span><span class="node n6"></span>
+        </div>
         <div class="eyebrow">HDA / 01 — Research</div>
         <h1>Evidence outranks<br>confidence.</h1>
         <p class="lede">HDA Research is the experimental core of the organization — where ideas become hypotheses,
@@ -429,6 +519,10 @@
     <!-- ============ MEDICINE ============ -->
     <div class="page" id="page-medicine" data-page="/medicine">
       <section class="div-hero">
+        <div class="bg-anim bg-anim-medicine" aria-hidden="true">
+          <div class="pulse-glow"></div>
+          <div class="ekg-track"></div>
+        </div>
         <div class="eyebrow">HDA / 02 — Medicine</div>
         <h1>Preserve life.<br>Understand why.</h1>
         <p class="lede">HDA Medicine is the clinical spine of the association — training built from MBBS through MD
@@ -451,6 +545,11 @@
     <!-- ============ AEROSPACE ============ -->
     <div class="page" id="page-aerospace" data-page="/aerospace">
       <section class="div-hero">
+        <div class="bg-anim bg-anim-aerospace" aria-hidden="true">
+          <div class="orbit orbit-1"><span class="sat"></span></div>
+          <div class="orbit orbit-2"><span class="sat"></span></div>
+          <div class="orbit orbit-3"><span class="sat"></span></div>
+        </div>
         <div class="eyebrow">HDA / 03 — Aerospace</div>
         <h1>From a static<br>test stand upward.</h1>
         <p class="lede">HDA Aerospace starts where most amateur rocketry does — Active desgining of solid motors and
