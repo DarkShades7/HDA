@@ -198,10 +198,22 @@
   .div-hero{
     min-height:78vh; display:flex; flex-direction:column; justify-content:center;
     padding-top:140px; padding-bottom:60px; border-bottom:1px solid var(--line);
-    position:relative; z-index:0; overflow:hidden;
+    position:relative; z-index:5; overflow:visible;
   }
-  .div-hero h1{ font-size:clamp(44px,7vw,88px); letter-spacing:-0.02em; }
-  .div-hero .lede{ max-width:620px; font-size:17px; margin-top:22px; }
+  .div-hero h1{
+    font-size:clamp(44px,7vw,88px); letter-spacing:-0.02em;
+    position:relative; z-index:6;
+    text-shadow: 0 0 40px rgba(6,7,10,0.9), 0 2px 12px rgba(6,7,10,0.7);
+  }
+  .div-hero .lede{
+    max-width:620px; font-size:17px; margin-top:22px;
+    position:relative; z-index:6;
+    text-shadow: 0 0 24px rgba(6,7,10,0.85);
+  }
+  .div-hero .eyebrow,
+  .div-hero .status-line{
+    position:relative; z-index:6;
+  }
   .div-grid{
     padding:90px clamp(20px,6vw,80px); display:grid; grid-template-columns:repeat(3,1fr); gap:34px;
   }
@@ -246,12 +258,18 @@
   .bg-anim canvas{
     position:absolute; inset:0; width:100%; height:100%; display:block;
   }
-  /* Keep page content above the fixed backgrounds */
+  /* Force all page content above the fixed division backgrounds */
   .page .div-hero,
   .page .coming-soon,
   .page .div-entries-wrap,
   .page footer{
-    position:relative; z-index:2;
+    position:relative; z-index:5;
+  }
+  .page .div-hero .eyebrow,
+  .page .div-hero h1,
+  .page .div-hero .lede,
+  .page .div-hero .status-line{
+    position:relative; z-index:6;
   }
 
   @media (prefers-reduced-motion: reduce){
